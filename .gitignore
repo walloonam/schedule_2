@@ -1,0 +1,8 @@
+﻿node_modules/
+.next/
+.npm-cache/
+*.log
+.next-dev.out.log
+.next-dev.err.log
+.next-dev.combined.log
+tsconfig.events-api.tsbuildinfo

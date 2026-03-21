@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "lib/server/**/*.ts",
+    "app/api/events/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
