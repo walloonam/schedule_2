@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { ChevronLeft, ChevronRight, MoonStar, SlidersHorizontal, SunMedium } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Menu, MoonStar, SunMedium } from "lucide-react";
 import { endOfWeek, format, startOfWeek } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ type CalendarHeaderProps = {
   onToday: () => void;
   onPrev: () => void;
   onNext: () => void;
-  onOpenFilters: () => void;
+  onOpenMenu: () => void;
   darkMode: boolean;
   onToggleDarkMode: () => void;
 };
@@ -51,28 +51,28 @@ export function CalendarHeader({
   onToday,
   onPrev,
   onNext,
-  onOpenFilters,
+  onOpenMenu,
   darkMode,
   onToggleDarkMode
 }: CalendarHeaderProps) {
   const filterCount = visibleCalendarCount + activeTagCount;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/70 bg-card/80 px-4 py-3 backdrop-blur md:px-6">
+    <header className="sticky top-0 z-20 border-b border-border/60 bg-card/60 px-4 py-3 backdrop-blur-xl md:px-6">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between xl:min-w-0 xl:flex-1">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {viewLabels[view]} 보기
-            </p>
-            <h1 className="mt-1 truncate text-lg font-semibold md:text-2xl">{getHeaderTitle(currentDate, view)}</h1>
+            <p className="editorial-kicker">Live workspace · {viewLabels[view]} 보기</p>
+            <h1 className="mt-1 truncate text-lg font-semibold tracking-[-0.03em] md:text-[1.9rem]">
+              {getHeaderTitle(currentDate, view)}
+            </h1>
           </div>
 
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={onToday}>
               오늘
             </Button>
-            <div className="flex items-center gap-1 rounded-full border border-border/70 bg-background/90 p-1">
+            <div className="flex items-center gap-1 rounded-full border border-border/70 bg-background/70 p-1">
               <Button variant="ghost" size="icon" onClick={onPrev} aria-label="이전 기간">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -84,7 +84,7 @@ export function CalendarHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-          <div className="flex items-center gap-1 rounded-full border border-border/70 bg-background/90 p-1">
+          <div className="flex items-center gap-1 rounded-full border border-border/70 bg-background/70 p-1">
             {views.map((item) => (
               <Button
                 key={item}
@@ -105,16 +105,21 @@ export function CalendarHeader({
           <Button
             variant="outline"
             size="sm"
-            onClick={onOpenFilters}
-            className="lg:hidden"
-            aria-label={`필터 열기. 캘린더 ${visibleCalendarCount}개와 태그 ${activeTagCount}개가 활성화되어 있습니다.`}
+            onClick={onOpenMenu}
+            aria-label={`캘린더 메뉴 열기. 캘린더 ${visibleCalendarCount}개와 태그 ${activeTagCount}개가 활성화되어 있습니다.`}
           >
-            <SlidersHorizontal className="h-4 w-4" />
-            필터
+            <Menu className="h-4 w-4" />
+            <span className="hidden sm:inline">캘린더 메뉴</span>
+            <span className="sm:hidden">메뉴</span>
             <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] text-secondary-foreground">
               {filterCount}
             </span>
           </Button>
+
+          <div className="hidden items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-2 text-xs font-medium text-muted-foreground md:flex">
+            <CalendarDays className="h-3.5 w-3.5" />
+            캘린더 {visibleCalendarCount}개
+          </div>
 
           <Button variant="outline" size="icon" onClick={onToggleDarkMode} aria-label="다크 모드 전환">
             {darkMode ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}

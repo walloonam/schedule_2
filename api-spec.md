@@ -48,11 +48,13 @@ Error response format:
 Query parameters:
 - `calendarId`: optional exact match
 - `tagId`: optional tag filter
-- `q`: optional title/description substring search
+- `q`: optional case-insensitive title/description substring search. Special wildcard characters are treated literally.
 - `startsFrom`: optional ISO datetime, includes overlapping events
 - `endsUntil`: optional ISO datetime, includes overlapping events
 - `limit`: optional, default `50`, max `100`
 - `offset`: optional, default `0`
+
+Filtering uses `AND` semantics across the supplied query parameters, and pagination is preserved on top of the filtered result set.
 
 Example:
 

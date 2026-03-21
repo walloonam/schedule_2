@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
-import { Check, CalendarDays, Tag, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CalendarDays, Check, Plus, Tag } from "lucide-react";
 import { Badge, chipButtonVariants } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,8 @@ type CalendarSidebarProps = {
   calendars: CalendarItem[];
   tags: TagItem[];
   activeTagIds: string[];
-  mobileOpen: boolean;
-  onMobileOpenChange: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onToggleCalendar: (calendarId: string) => void;
   onToggleTag: (tagId: string) => void;
   onCreate: () => void;
@@ -41,20 +41,50 @@ function SidebarContent({
   onToggleCalendar,
   onToggleTag,
   onCreate
-}: Omit<CalendarSidebarProps, "mobileOpen" | "onMobileOpenChange">) {
+}: Omit<CalendarSidebarProps, "open" | "onOpenChange">) {
   const activeCalendarCount = calendars.filter((calendar) => calendar.checked).length;
   const activeTagCount = activeTagIds.length;
 
   return (
-    <div className="space-y-6">
-      <Button className="w-full justify-start rounded-[var(--radius-md)]" onClick={onCreate}>
-        <Plus className="h-4 w-4" />
-        일정 추가
-      </Button>
+    <div className="space-y-7">
+      <div className="space-y-3">
+        <div className="space-y-4">
+          <div>
+            <p className="editorial-kicker">Calendar menu</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">캘린더 작업면</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              메뉴 패널에서 표시할 캘린더와 태그를 조정하고, 새 일정을 바로 추가할 수 있습니다.
+            </p>
+          </div>
 
-      <section aria-labelledby="calendar-filter-heading" className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-[var(--radius-md)] border border-border/60 bg-background/70 px-3 py-3">
+              <p className="editorial-kicker">캘린더</p>
+              <p className="mt-2 text-base font-semibold">
+                {activeCalendarCount}/{calendars.length}
+              </p>
+            </div>
+            <div className="rounded-[var(--radius-md)] border border-border/60 bg-background/70 px-3 py-3">
+              <p className="editorial-kicker">태그</p>
+              <p className="mt-2 text-base font-semibold">
+                {activeTagCount}/{tags.length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <Button className="w-full justify-start rounded-[var(--radius-md)]" onClick={onCreate}>
+          <Plus className="h-4 w-4" />
+          일정 추가
+        </Button>
+      </div>
+
+      <section aria-labelledby="calendar-filter-heading" className="space-y-3 border-t border-border/60 pt-6">
         <div className="flex items-center justify-between gap-2 px-1">
-          <h2 id="calendar-filter-heading" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <h2
+            id="calendar-filter-heading"
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+          >
             <CalendarDays className="h-3.5 w-3.5" />
             캘린더
           </h2>
@@ -71,25 +101,25 @@ function SidebarContent({
               onClick={() => onToggleCalendar(calendar.id)}
               aria-pressed={calendar.checked}
               className={cn(
-                "ui-interactive flex min-h-11 w-full items-center justify-between rounded-[var(--radius-md)] border px-3 py-2 text-left shadow-sm",
+                "ui-interactive flex min-h-11 w-full items-center justify-between rounded-[var(--radius-md)] border px-3 py-2.5 text-left shadow-sm transition-all duration-200",
                 calendar.checked
                   ? "border-primary/15 bg-primary/5 text-foreground"
-                  : "border-transparent bg-transparent text-muted-foreground hover:bg-accent/70"
+                  : "border-transparent bg-transparent text-muted-foreground hover:bg-accent/50"
               )}
             >
               <span className="flex items-center gap-3">
                 <span className="h-3 w-3 rounded-full" style={{ backgroundColor: calendar.color }} aria-hidden="true" />
                 <span>
                   <span className="block text-sm font-medium">{calendar.name}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {calendar.checked ? "표시 중" : "숨김"}
-                  </span>
+                  <span className="block text-xs text-muted-foreground">{calendar.checked ? "표시 중" : "숨김"}</span>
                 </span>
               </span>
               <span
                 className={cn(
                   "inline-flex h-6 w-6 items-center justify-center rounded-full border transition-colors",
-                  calendar.checked ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-transparent"
+                  calendar.checked
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-background text-transparent"
                 )}
                 aria-hidden="true"
               >
@@ -100,9 +130,12 @@ function SidebarContent({
         </div>
       </section>
 
-      <section aria-labelledby="tag-filter-heading" className="space-y-3">
+      <section aria-labelledby="tag-filter-heading" className="space-y-3 border-t border-border/60 pt-6">
         <div className="flex items-center justify-between gap-2 px-1">
-          <h2 id="tag-filter-heading" className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <h2
+            id="tag-filter-heading"
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+          >
             <Tag className="h-3.5 w-3.5" />
             태그 필터
           </h2>
@@ -153,53 +186,37 @@ export function CalendarSidebar({
   calendars,
   tags,
   activeTagIds,
-  mobileOpen,
-  onMobileOpenChange,
+  open,
+  onOpenChange,
   onToggleCalendar,
   onToggleTag,
   onCreate
 }: CalendarSidebarProps) {
   const handleCreate = () => {
     onCreate();
-    onMobileOpenChange(false);
+    onOpenChange(false);
   };
 
   return (
-    <>
-      <aside
-        className="hidden w-[300px] shrink-0 border-r border-border/70 bg-card/75 px-4 py-5 backdrop-blur-sm lg:block"
-        aria-label="캘린더 필터 사이드바"
-      >
-        <SidebarContent
-          calendars={calendars}
-          tags={tags}
-          activeTagIds={activeTagIds}
-          onToggleCalendar={onToggleCalendar}
-          onToggleTag={onToggleTag}
-          onCreate={onCreate}
-        />
-      </aside>
-
-      <Dialog open={mobileOpen} onOpenChange={onMobileOpenChange}>
-        <DialogContent className="lg:hidden">
-          <DialogHeader className="border-b border-border/70 px-5 pb-4 pt-5">
-            <DialogTitle>필터 및 캘린더</DialogTitle>
-            <DialogDescription>
-              모바일에서는 표시할 캘린더와 태그를 패널에서 빠르게 전환할 수 있습니다.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[calc(100dvh-8rem)] overflow-y-auto px-4 py-4">
-            <SidebarContent
-              calendars={calendars}
-              tags={tags}
-              activeTagIds={activeTagIds}
-              onToggleCalendar={onToggleCalendar}
-              onToggleTag={onToggleTag}
-              onCreate={handleCreate}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[min(100vw-1rem,30rem)] p-0 sm:w-[min(92vw,30rem)] lg:left-4 lg:top-4 lg:bottom-4 lg:h-[calc(100dvh-2rem)] lg:w-[min(100vw-2rem,31rem)] lg:max-w-none lg:-translate-x-0 lg:-translate-y-0 lg:rounded-[1.75rem]">
+        <DialogHeader className="border-b border-border/70 px-5 pb-4 pt-5 pr-14">
+          <DialogTitle>캘린더 메뉴</DialogTitle>
+          <DialogDescription>
+            캘린더 표시와 태그 필터를 여기서 빠르게 조정할 수 있습니다.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="max-h-[calc(100dvh-8rem)] overflow-y-auto px-4 py-4">
+          <SidebarContent
+            calendars={calendars}
+            tags={tags}
+            activeTagIds={activeTagIds}
+            onToggleCalendar={onToggleCalendar}
+            onToggleTag={onToggleTag}
+            onCreate={handleCreate}
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

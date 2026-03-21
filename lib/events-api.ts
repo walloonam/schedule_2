@@ -1,7 +1,9 @@
-﻿import {
+﻿import { endOfDay } from "date-fns";
+import {
   ApiErrorDetail,
   EventDraft,
   EventItem,
+  EventListQueryParams,
   EventListResult,
   EventMutationInput,
   EventRecord
@@ -90,16 +92,27 @@ export function mapEventRecordToItem(
 
   return {
     id: record.id,
+    sourceEventId: record.sourceEventId,
     title: record.title,
     description: record.description,
     start: record.startAt,
     end: record.endAt,
     tagId,
-    calendarId: record.calendarId
+    calendarId: record.calendarId,
+    recurrence: record.recurrence
   };
 }
 
 export function mapEventDraftToMutationInput(draft: EventDraft): EventMutationInput {
+  const recurrence =
+    draft.recurrenceEnabled && draft.recurrenceFrequency === "weekly"
+      ? {
+          frequency: "weekly" as const,
+          interval: Math.max(1, Number(draft.recurrenceInterval) || 1),
+          until: draft.recurrenceUntil ? endOfDay(new Date(draft.recurrenceUntil)).toISOString() : null
+        }
+      : null;
+
   return {
     title: draft.title.trim(),
     description: draft.description.trim(),
@@ -107,12 +120,32 @@ export function mapEventDraftToMutationInput(draft: EventDraft): EventMutationIn
     endAt: new Date(draft.end).toISOString(),
     calendarId: draft.calendarId,
     tagIds: draft.tagId ? [draft.tagId] : [],
-    status: "confirmed"
+    status: "confirmed",
+    recurrence
   };
 }
 
-export async function listEvents() {
-  return eventsRequest<EventListResult>(EVENTS_API_URL, { method: "GET" });
+function buildEventsListUrl(params?: EventListQueryParams) {
+  if (!params) {
+    return EVENTS_API_URL;
+  }
+
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === "") {
+      continue;
+    }
+
+    searchParams.set(key, String(value));
+  }
+
+  const queryString = searchParams.toString();
+  return queryString ? `${EVENTS_API_URL}?${queryString}` : EVENTS_API_URL;
+}
+
+export async function listEvents(params?: EventListQueryParams) {
+  return eventsRequest<EventListResult>(buildEventsListUrl(params), { method: "GET" });
 }
 
 export async function createEvent(input: EventMutationInput) {
@@ -146,4 +179,3 @@ export function toUserErrorMessage(error: unknown) {
 
   return "일정 요청 중 알 수 없는 오류가 발생했습니다.";
 }
-

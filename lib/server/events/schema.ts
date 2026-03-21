@@ -26,6 +26,14 @@ const tagIdsSchema = z.array(idSchema).max(10, "Up to 10 tags are allowed.").def
 
 const eventStatusSchema = z.enum(["confirmed", "tentative", "cancelled"]).default("confirmed");
 
+const recurrenceSchema = z
+  .object({
+    frequency: z.literal("weekly"),
+    interval: z.number().int().min(1).max(12).default(1),
+    until: isoDateTimeSchema.nullable().default(null)
+  })
+  .strict();
+
 const eventBaseSchema = z
   .object({
     title: eventTitleSchema,
@@ -34,7 +42,8 @@ const eventBaseSchema = z
     endAt: isoDateTimeSchema,
     calendarId: idSchema,
     tagIds: tagIdsSchema,
-    status: eventStatusSchema
+    status: eventStatusSchema,
+    recurrence: recurrenceSchema.nullable().default(null)
   })
   .strict();
 
@@ -48,6 +57,18 @@ function validateDateRange<T extends { startAt?: string; endAt?: string }>(value
       code: z.ZodIssueCode.custom,
       path: ["endAt"],
       message: "endAt must be later than startAt."
+    });
+  }
+
+  const recurrence =
+    "recurrence" in value && typeof value.recurrence === "object" && value.recurrence !== null
+      ? (value.recurrence as { until?: string | null })
+      : null;
+  if (recurrence?.until && new Date(recurrence.until).getTime() < new Date(value.startAt).getTime()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["recurrence", "until"],
+      message: "recurrence.until must be on or after startAt."
     });
   }
 }

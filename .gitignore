@@ -6,3 +6,6 @@
 .next-dev.err.log
 .next-dev.combined.log
 tsconfig.events-api.tsbuildinfo
+.env.local
+.env
+.env.*.local
