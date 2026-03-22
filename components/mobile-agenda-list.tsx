@@ -1,10 +1,9 @@
 "use client";
 
-import { format, isSameDay } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Repeat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EventItem, TagItem } from "@/lib/types";
+import { formatInAppTimeZone, isSameAppDay } from "@/lib/timezone";
 
 type MobileAgendaListProps = {
   date: Date;
@@ -15,7 +14,7 @@ type MobileAgendaListProps = {
 
 export function MobileAgendaList({ date, events, tags, onSelectEvent }: MobileAgendaListProps) {
   const list = events
-    .filter((event) => isSameDay(new Date(event.start), date))
+    .filter((event) => isSameAppDay(event.start, date))
     .sort((a, b) => +new Date(a.start) - +new Date(b.start));
 
   if (!list.length) {
@@ -32,7 +31,7 @@ export function MobileAgendaList({ date, events, tags, onSelectEvent }: MobileAg
       <div className="px-1">
         <p className="editorial-kicker">Mobile agenda</p>
         <h2 className="mt-1 text-base font-semibold tracking-[-0.02em]">
-          {format(date, "M월 d일 (EEE)", { locale: ko })}
+          {formatInAppTimeZone(date, "M월 d일 (EEE)")}
         </h2>
       </div>
 
@@ -56,7 +55,7 @@ export function MobileAgendaList({ date, events, tags, onSelectEvent }: MobileAg
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">
-                {format(new Date(event.start), "HH:mm")} - {format(new Date(event.end), "HH:mm")}
+                {formatInAppTimeZone(new Date(event.start), "HH:mm")} - {formatInAppTimeZone(new Date(event.end), "HH:mm")}
               </p>
             </button>
           );

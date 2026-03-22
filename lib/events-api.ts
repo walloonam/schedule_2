@@ -1,4 +1,3 @@
-﻿import { endOfDay } from "date-fns";
 import {
   ApiErrorDetail,
   EventDraft,
@@ -8,6 +7,7 @@ import {
   EventMutationInput,
   EventRecord
 } from "@/lib/types";
+import { appDateInputToEndOfDayIso, appDateTimeInputToIso } from "@/lib/timezone";
 
 const EVENTS_API_URL = "/api/events";
 const EVENTS_API_HEADERS = {
@@ -109,15 +109,15 @@ export function mapEventDraftToMutationInput(draft: EventDraft): EventMutationIn
       ? {
           frequency: "weekly" as const,
           interval: Math.max(1, Number(draft.recurrenceInterval) || 1),
-          until: draft.recurrenceUntil ? endOfDay(new Date(draft.recurrenceUntil)).toISOString() : null
+          until: draft.recurrenceUntil ? appDateInputToEndOfDayIso(draft.recurrenceUntil) : null
         }
       : null;
 
   return {
     title: draft.title.trim(),
     description: draft.description.trim(),
-    startAt: new Date(draft.start).toISOString(),
-    endAt: new Date(draft.end).toISOString(),
+    startAt: appDateTimeInputToIso(draft.start),
+    endAt: appDateTimeInputToIso(draft.end),
     calendarId: draft.calendarId,
     tagIds: draft.tagId ? [draft.tagId] : [],
     status: "confirmed",

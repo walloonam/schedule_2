@@ -1,5 +1,5 @@
-import { endOfDay, startOfDay } from "date-fns";
 import { EventItem } from "@/lib/types";
+import { endOfAppDay, startOfAppDay } from "@/lib/timezone";
 
 const MINUTES_PER_HOUR = 60;
 const MS_PER_MINUTE = 60_000;
@@ -31,12 +31,12 @@ function sortByStart(left: EventItem, right: EventItem) {
 }
 
 function isImportantTag(tagId: string) {
-  return ["deadline", "planning", "review"].includes(tagId);
+  return ["deadline", "review"].includes(tagId);
 }
 
 export function getTodayEvents(events: EventItem[], now: Date = new Date()) {
-  const dayStart = startOfDay(now).getTime();
-  const dayEnd = endOfDay(now).getTime();
+  const dayStart = startOfAppDay(now).getTime();
+  const dayEnd = endOfAppDay(now).getTime();
 
   return events
     .filter((event) => {
@@ -50,8 +50,8 @@ export function getTodayEvents(events: EventItem[], now: Date = new Date()) {
 function buildFocusBlocks(todayEvents: EventItem[], now: Date) {
   const blocks: FocusBlock[] = [];
   const minimumGap = FOCUS_BLOCK_MINUTES * MS_PER_MINUTE;
-  const endOfToday = endOfDay(now).getTime();
-  let cursor = Math.max(now.getTime(), startOfDay(now).getTime());
+  const endOfToday = endOfAppDay(now).getTime();
+  let cursor = Math.max(now.getTime(), startOfAppDay(now).getTime());
 
   for (const event of todayEvents) {
     const start = new Date(event.start).getTime();

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "lint": "eslint .",
-    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs"
+    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "test:natural-schedule": "node scripts/test-natural-schedule.mjs",
+    "bench:natural-schedule": "node scripts/benchmark-natural-schedule.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.3",

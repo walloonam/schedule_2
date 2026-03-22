@@ -1,19 +1,18 @@
 "use client";
 
-import {
-  addDays,
-  endOfMonth,
-  endOfWeek,
-  format,
-  isSameDay,
-  isSameMonth,
-  isToday,
-  startOfMonth,
-  startOfWeek
-} from "date-fns";
-import { ko } from "date-fns/locale";
+import { addDays } from "date-fns";
 import { Repeat } from "lucide-react";
 import { EventItem, TagItem } from "@/lib/types";
+import {
+  endOfAppMonth,
+  endOfAppWeek,
+  formatInAppTimeZone,
+  isAppToday,
+  isSameAppDay,
+  isSameAppMonth,
+  startOfAppMonth,
+  startOfAppWeek
+} from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 type MonthCalendarProps = {
@@ -29,7 +28,7 @@ const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
 function eventsOfDay(date: Date, events: EventItem[]) {
   return events
-    .filter((event) => isSameDay(new Date(event.start), date))
+    .filter((event) => isSameAppDay(new Date(event.start), date))
     .sort((a, b) => +new Date(a.start) - +new Date(b.start));
 }
 
@@ -41,10 +40,9 @@ export function MonthCalendar({
   onSelectDate,
   onSelectEvent
 }: MonthCalendarProps) {
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(monthStart);
-  const gridStart = startOfWeek(monthStart);
-  const gridEnd = endOfWeek(monthEnd);
+  const monthStart = startOfAppMonth(currentDate);
+  const gridStart = startOfAppWeek(startOfAppMonth(currentDate));
+  const gridEnd = endOfAppWeek(endOfAppMonth(currentDate));
 
   const days: Date[] = [];
   let day = gridStart;
@@ -74,9 +72,9 @@ export function MonthCalendar({
               key={date.toISOString()}
               className={cn(
                 "group flex min-h-[138px] flex-col bg-background/90 p-2.5 text-left transition-colors duration-200",
-                !isSameMonth(date, monthStart) && "bg-muted/40 text-muted-foreground",
-                isSameDay(date, selectedDate) && "bg-accent/50",
-                isToday(date) && "ring-1 ring-primary/60 ring-inset"
+                !isSameAppMonth(date, monthStart) && "bg-muted/40 text-muted-foreground",
+                isSameAppDay(date, selectedDate) && "bg-accent/50",
+                isAppToday(date) && "ring-1 ring-primary/60 ring-inset"
               )}
             >
               <button
@@ -87,10 +85,10 @@ export function MonthCalendar({
                 <span
                   className={cn(
                     "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                    isToday(date) && "bg-primary text-primary-foreground"
+                    isAppToday(date) && "bg-primary text-primary-foreground"
                   )}
                 >
-                  {format(date, "d", { locale: ko })}
+                  {formatInAppTimeZone(date, "d")}
                 </span>
                 {dayEvents.length > 3 ? (
                   <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">밀집</span>
@@ -115,7 +113,7 @@ export function MonthCalendar({
                         <p className="truncate font-medium">{event.title}</p>
                         {event.recurrence ? <Repeat className="h-3 w-3 shrink-0 text-muted-foreground" /> : null}
                       </div>
-                      <p className="text-[11px] text-muted-foreground">{format(new Date(event.start), "HH:mm")}</p>
+                      <p className="text-[11px] text-muted-foreground">{formatInAppTimeZone(new Date(event.start), "HH:mm")}</p>
                     </button>
                   );
                 })}

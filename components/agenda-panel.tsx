@@ -1,9 +1,8 @@
 "use client";
 
-import { format, isSameDay, isSameWeek } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Repeat } from "lucide-react";
 import { CalendarView, EventItem, TagItem } from "@/lib/types";
+import { formatInAppTimeZone, isSameAppDay, isSameAppWeek } from "@/lib/timezone";
 
 type AgendaPanelProps = {
   view: CalendarView;
@@ -16,9 +15,8 @@ type AgendaPanelProps = {
 export function AgendaPanel({ view, currentDate, events, tags, onSelectEvent }: AgendaPanelProps) {
   const filtered = events
     .filter((event) => {
-      const start = new Date(event.start);
-      if (view === "day") return isSameDay(start, currentDate);
-      return isSameWeek(start, currentDate);
+      if (view === "day") return isSameAppDay(event.start, currentDate);
+      return isSameAppWeek(event.start, currentDate);
     })
     .sort((a, b) => +new Date(a.start) - +new Date(b.start));
 
@@ -59,7 +57,7 @@ export function AgendaPanel({ view, currentDate, events, tags, onSelectEvent }: 
                   </span>
                 </div>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  {format(new Date(event.start), "M월 d일 (EEE) HH:mm", { locale: ko })}
+                  {formatInAppTimeZone(new Date(event.start), "M월 d일 (EEE) HH:mm")}
                 </p>
               </button>
             );

@@ -96,3 +96,17 @@ export type ApiErrorDetail = {
   message: string;
   code: string;
 };
+
+export type ParsedScheduleDraft = {
+  title: string;
+  startAt: string | null;
+  endAt: string | null;
+  durationMinutes: number | null;
+  priorityTagId: string | null;
+  calendarId: string | null;
+  confidence: "high" | "medium" | "low";
+  needsConfirmation: boolean;
+  missingFields: Array<"title" | "startAt" | "endAt">;
+  warnings: string[];
+  originalText: string;
+};

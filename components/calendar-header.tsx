@@ -1,10 +1,9 @@
 "use client";
 
 import { CalendarDays, ChevronLeft, ChevronRight, Menu, MoonStar, SunMedium } from "lucide-react";
-import { endOfWeek, format, startOfWeek } from "date-fns";
-import { ko } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { CalendarView } from "@/lib/types";
+import { endOfAppWeek, formatInAppTimeZone, startOfAppWeek } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 type CalendarHeaderProps = {
@@ -30,16 +29,16 @@ const viewLabels: Record<CalendarView, string> = {
 
 function getHeaderTitle(currentDate: Date, view: CalendarView) {
   if (view === "month") {
-    return format(currentDate, "yyyy년 M월", { locale: ko });
+    return formatInAppTimeZone(currentDate, "yyyy년 M월");
   }
 
   if (view === "week") {
-    const start = startOfWeek(currentDate, { locale: ko });
-    const end = endOfWeek(currentDate, { locale: ko });
-    return `${format(start, "M월 d일", { locale: ko })} - ${format(end, "M월 d일", { locale: ko })}`;
+    const start = startOfAppWeek(currentDate);
+    const end = endOfAppWeek(currentDate);
+    return `${formatInAppTimeZone(start, "M월 d일")} - ${formatInAppTimeZone(end, "M월 d일")}`;
   }
 
-  return format(currentDate, "M월 d일 EEEE", { locale: ko });
+  return formatInAppTimeZone(currentDate, "M월 d일 EEEE");
 }
 
 export function CalendarHeader({

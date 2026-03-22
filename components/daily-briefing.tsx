@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { endOfDay, format, startOfDay } from "date-fns";
-import { ko } from "date-fns/locale";
 import { AlertTriangle, ArrowRight, Clock3, RefreshCcw, Siren, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,6 +10,7 @@ import { createDailyBriefing, formatRelativeMinutes } from "@/lib/briefing";
 import { tags } from "@/lib/dummy-data";
 import { listEvents, mapEventRecordToItem, toUserErrorMessage } from "@/lib/events-api";
 import { EventItem } from "@/lib/types";
+import { endOfAppDay, formatInAppTimeZone, startOfAppDay } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 type DailyBriefingProps = {
@@ -46,8 +45,8 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
     setErrorMessage(null);
 
     try {
-      const dayStart = startOfDay(new Date()).toISOString();
-      const dayEnd = endOfDay(new Date()).toISOString();
+      const dayStart = startOfAppDay(new Date()).toISOString();
+      const dayEnd = endOfAppDay(new Date()).toISOString();
       const result = await listEvents({
         startsFrom: dayStart,
         endsUntil: dayEnd
@@ -138,7 +137,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
   }
 
   const nextEventLabel = summary.topPriorityEvent
-    ? `${format(new Date(summary.topPriorityEvent.start), "HH:mm", { locale: ko })} ${summary.topPriorityEvent.title}`
+    ? `${formatInAppTimeZone(summary.topPriorityEvent.start, "HH:mm")} ${summary.topPriorityEvent.title}`
     : "남은 일정 없음";
 
   if (compact) {
@@ -147,7 +146,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
         <div className="relative flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <p className="editorial-kicker">Briefing rail</p>
-            <div className="data-pill">{format(now, "M월 d일 EEEE", { locale: ko })}</div>
+            <div className="data-pill">{formatInAppTimeZone(now, "M월 d일 EEEE")}</div>
           </div>
 
           <div className="space-y-2">
@@ -171,7 +170,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
             <CompactMetric label="중요 일정" value={`${summary.importantEvents.length}건`} />
             <CompactMetric
               label="집중 블록"
-              value={summary.focusBlocks[0] ? format(new Date(summary.focusBlocks[0].start), "HH:mm", { locale: ko }) : "없음"}
+              value={summary.focusBlocks[0] ? formatInAppTimeZone(summary.focusBlocks[0].start, "HH:mm") : "없음"}
             />
           </div>
 
@@ -201,7 +200,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
               오늘 일정 브리핑
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {format(now, "M월 d일 EEEE", { locale: ko })} 기준으로 오늘 일정의 우선순위를 정리했습니다.
+              {formatInAppTimeZone(now, "M월 d일 EEEE")} 기준으로 오늘 일정의 우선순위를 정리했습니다.
             </p>
           </div>
 
@@ -236,7 +235,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
               <div className="mt-3">
                 <p className="text-lg font-semibold">{summary.topPriorityEvent.title}</p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {format(new Date(summary.topPriorityEvent.start), "HH:mm", { locale: ko })} 시작 ·{" "}
+                  {formatInAppTimeZone(summary.topPriorityEvent.start, "HH:mm")} 시작 ·{" "}
                   {formatRelativeMinutes(summary.minutesUntilFirstEvent)}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -259,7 +258,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
                   <article key={event.id} className="rounded-[var(--radius-md)] border border-destructive/20 bg-background/80 p-3">
                     <p className="font-medium">{event.title}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {format(new Date(event.start), "HH:mm", { locale: ko })} 시작
+                      {formatInAppTimeZone(event.start, "HH:mm")} 시작
                     </p>
                   </article>
                 ))
@@ -320,8 +319,7 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
                       </Badge>
                     </div>
                     <p className="mt-3 text-sm text-muted-foreground">
-                      {format(new Date(event.start), "HH:mm", { locale: ko })} -{" "}
-                      {format(new Date(event.end), "HH:mm", { locale: ko })}
+                      {formatInAppTimeZone(event.start, "HH:mm")} - {formatInAppTimeZone(event.end, "HH:mm")}
                     </p>
                   </article>
                 );
@@ -334,13 +332,12 @@ export function DailyBriefing({ mode = "compact", className }: DailyBriefingProp
             <div className="mt-3 space-y-2">
               {summary.focusBlocks.length > 0 ? (
                 summary.focusBlocks.map((block) => (
-                  <div key={`${block.start}-${block.end}`} className="rounded-[var(--radius-md)] border border-border/60 bg-card/80 px-3 py-2">
-                    <p className="font-medium">
-                      {format(new Date(block.start), "HH:mm", { locale: ko })} -{" "}
-                      {format(new Date(block.end), "HH:mm", { locale: ko })}
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{block.summary}</p>
-                  </div>
+                <div key={`${block.start}-${block.end}`} className="rounded-[var(--radius-md)] border border-border/60 bg-card/80 px-3 py-2">
+                  <p className="font-medium">
+                    {formatInAppTimeZone(block.start, "HH:mm")} - {formatInAppTimeZone(block.end, "HH:mm")}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{block.summary}</p>
+                </div>
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">추천할 집중 블록이 없습니다.</p>

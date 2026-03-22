@@ -1,10 +1,9 @@
-﻿import { addDays, setHours, setMinutes } from "date-fns";
-import { CalendarItem, EventItem, TagItem } from "@/lib/types";
-
-const base = new Date(2026, 2, 21, 9, 0, 0);
+﻿import { CalendarItem, EventItem, TagItem } from "@/lib/types";
+import { fromAppWallTime } from "@/lib/timezone";
 
 function at(dayOffset: number, hour: number, minute: number) {
-  return setMinutes(setHours(addDays(base, dayOffset), hour), minute).toISOString();
+  const wall = new Date(Date.UTC(2026, 2, 21 + dayOffset, hour, minute, 0));
+  return fromAppWallTime(wall).toISOString();
 }
 
 export const initialCalendars: CalendarItem[] = [
@@ -14,10 +13,10 @@ export const initialCalendars: CalendarItem[] = [
 ];
 
 export const tags: TagItem[] = [
-  { id: "planning", name: "기획", color: "#3b82f6" },
-  { id: "meeting", name: "회의", color: "#0ea5a4" },
-  { id: "deadline", name: "마감", color: "#ef4444" },
-  { id: "review", name: "리뷰", color: "#f59e0b" }
+  { id: "planning", name: "낮음", color: "#3b82f6" },
+  { id: "meeting", name: "보통", color: "#0ea5a4" },
+  { id: "review", name: "높음", color: "#f59e0b" },
+  { id: "deadline", name: "긴급", color: "#ef4444" }
 ];
 
 export const initialEvents: EventItem[] = [

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, PanelTop, Sparkles } from "lucide-react";
 import { DailyBriefing } from "@/components/daily-briefing";
+import { HomeNaturalScheduler } from "@/components/home-natural-scheduler";
 import { Button } from "@/components/ui/button";
 
 export default function Page() {
@@ -73,6 +74,7 @@ export default function Page() {
         </section>
 
         <DailyBriefing mode="full" />
+        <HomeNaturalScheduler />
       </div>
     </main>
   );

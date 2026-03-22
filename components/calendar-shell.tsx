@@ -5,12 +5,6 @@ import {
   addDays,
   addMonths,
   addWeeks,
-  endOfDay,
-  endOfMonth,
-  endOfWeek,
-  startOfMonth,
-  startOfDay,
-  startOfWeek,
   subDays,
   subMonths,
   subWeeks
@@ -35,6 +29,16 @@ import {
   updateEvent
 } from "@/lib/events-api";
 import { CalendarItem, CalendarView, EventDraft, EventItem } from "@/lib/types";
+import {
+  appDateInputToEndOfDayIso,
+  appDateInputToStartOfDayIso,
+  endOfAppDay,
+  endOfAppMonth,
+  endOfAppWeek,
+  startOfAppDay,
+  startOfAppMonth,
+  startOfAppWeek
+} from "@/lib/timezone";
 
 function moveDate(date: Date, view: CalendarView, dir: "prev" | "next") {
   const plus = dir === "next";
@@ -49,21 +53,21 @@ const fallbackTagId = tags[0]?.id ?? "";
 function getVisibleDateWindow(currentDate: Date, view: CalendarView) {
   if (view === "month") {
     return {
-      start: startOfWeek(startOfMonth(currentDate)),
-      end: endOfWeek(endOfMonth(currentDate))
+      start: startOfAppWeek(startOfAppMonth(currentDate)),
+      end: endOfAppWeek(endOfAppMonth(currentDate))
     };
   }
 
   if (view === "week") {
     return {
-      start: startOfWeek(currentDate),
-      end: endOfWeek(currentDate)
+      start: startOfAppWeek(currentDate),
+      end: endOfAppWeek(currentDate)
     };
   }
 
   return {
-    start: startOfDay(currentDate),
-    end: endOfDay(currentDate)
+    start: startOfAppDay(currentDate),
+    end: endOfAppDay(currentDate)
   };
 }
 
@@ -102,8 +106,8 @@ export function CalendarShell() {
       const visibleWindow = getVisibleDateWindow(currentDate, view);
       const result = await listEvents({
         q: searchQuery || undefined,
-        startsFrom: (startsOn ? startOfDay(new Date(startsOn)) : visibleWindow.start).toISOString(),
-        endsUntil: (endsOn ? endOfDay(new Date(endsOn)) : visibleWindow.end).toISOString()
+        startsFrom: startsOn ? appDateInputToStartOfDayIso(startsOn) : visibleWindow.start.toISOString(),
+        endsUntil: endsOn ? appDateInputToEndOfDayIso(endsOn) : visibleWindow.end.toISOString()
       });
       const mappedEvents = result.items.map((record) =>
         mapEventRecordToItem(record, { availableTagIds, fallbackTagId })
@@ -161,7 +165,7 @@ export function CalendarShell() {
     }
 
     if (activeTags.length !== tags.length) {
-      summary.push({ key: "tag", label: `태그 ${activeTags.length}/${tags.length}` });
+      summary.push({ key: "tag", label: `우선순위 ${activeTags.length}/${tags.length}` });
     }
 
     return summary;
@@ -226,6 +230,7 @@ export function CalendarShell() {
   };
 
   const showGlobalEmpty = filteredEvents.length === 0;
+  const showMonthWorkspace = view === "month";
   const visibleCalendarCount = calendars.filter((calendar) => calendar.checked).length;
 
   return (
@@ -342,19 +347,6 @@ export function CalendarShell() {
                       다시 시도
                     </Button>
                   </div>
-                ) : showGlobalEmpty ? (
-                  <div className="glass-panel flex h-full min-h-[360px] flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed p-8 text-center">
-                    <h2 className="text-base font-semibold">조건에 맞는 일정이 없습니다</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      검색어나 날짜 범위를 조정하거나 전체 초기화로 다시 넓혀보세요.
-                    </p>
-                    {activeFilterSummary.length > 0 ? (
-                      <Button variant="outline" className="mt-4" onClick={resetAllFilters}>
-                        <X className="h-4 w-4" />
-                        필터 초기화
-                      </Button>
-                    ) : null}
-                  </div>
                 ) : (
                   <>
                     {loadError ? (
@@ -365,15 +357,59 @@ export function CalendarShell() {
                         </Button>
                       </div>
                     ) : null}
-                    {view === "month" ? (
-                      <MonthCalendar
-                        currentDate={currentDate}
-                        events={filteredEvents}
-                        tags={tags}
-                        selectedDate={selectedDate}
-                        onSelectDate={setSelectedDate}
-                        onSelectEvent={openEditModal}
-                      />
+                    {showMonthWorkspace ? (
+                      <>
+                        {showGlobalEmpty ? (
+                          <div className="glass-panel flex flex-col gap-3 rounded-[var(--radius-lg)] border border-dashed px-4 py-4 text-left md:flex-row md:items-center md:justify-between">
+                            <div>
+                              <h2 className="text-base font-semibold">아직 일정이 없습니다</h2>
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                달력은 계속 보이도록 유지했습니다. 날짜를 보면서 새 일정을 추가하거나 필터를 다시 넓혀보세요.
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button onClick={openCreateModal}>
+                                <Plus className="h-4 w-4" />
+                                새 일정 추가
+                              </Button>
+                              {activeFilterSummary.length > 0 ? (
+                                <Button variant="outline" onClick={resetAllFilters}>
+                                  <X className="h-4 w-4" />
+                                  필터 초기화
+                                </Button>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : null}
+
+                        <MonthCalendar
+                          currentDate={currentDate}
+                          events={filteredEvents}
+                          tags={tags}
+                          selectedDate={selectedDate}
+                          onSelectDate={setSelectedDate}
+                          onSelectEvent={openEditModal}
+                        />
+                      </>
+                    ) : showGlobalEmpty ? (
+                      <div className="glass-panel flex h-full min-h-[360px] flex-col items-center justify-center rounded-[var(--radius-lg)] border border-dashed p-8 text-center">
+                        <h2 className="text-base font-semibold">조건에 맞는 일정이 없습니다</h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          검색어나 날짜 범위를 조정하거나 전체 초기화로 다시 넓혀보세요.
+                        </p>
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                          <Button onClick={openCreateModal}>
+                            <Plus className="h-4 w-4" />
+                            새 일정 추가
+                          </Button>
+                          {activeFilterSummary.length > 0 ? (
+                            <Button variant="outline" onClick={resetAllFilters}>
+                              <X className="h-4 w-4" />
+                              필터 초기화
+                            </Button>
+                          ) : null}
+                        </div>
+                      </div>
                     ) : (
                       <AgendaPanel
                         view={view}

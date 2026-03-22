@@ -137,7 +137,7 @@ function SidebarContent({
             className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
           >
             <Tag className="h-3.5 w-3.5" />
-            태그 필터
+            우선순위 필터
           </h2>
           <Badge variant="outline" size="sm">
             {activeTagCount}/{tags.length}
@@ -203,7 +203,7 @@ export function CalendarSidebar({
         <DialogHeader className="border-b border-border/70 px-5 pb-4 pt-5 pr-14">
           <DialogTitle>캘린더 메뉴</DialogTitle>
           <DialogDescription>
-            캘린더 표시와 태그 필터를 여기서 빠르게 조정할 수 있습니다.
+            캘린더 표시와 우선순위 필터를 여기서 빠르게 조정할 수 있습니다.
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[calc(100dvh-8rem)] overflow-y-auto px-4 py-4">
