@@ -38,7 +38,8 @@ For UI checks, `build + start` is the more stable path than `next dev`.
 ## Working Rules
 
 - Issue titles use `[AREA-##]` format.
-- Issue bodies follow `문제 제기 / 해결 방법 / 결과`.
+- Open issues use `문제 제기 / 해결 방법 / 기대 결과`.
+- Closed issues can be read as `문제 제기 / 해결 방법 / 결과`.
 - Closed work moves into `docs/issues/issue-log.md` under `Done`.
 - Open follow-up work stays in `Open`.
 
